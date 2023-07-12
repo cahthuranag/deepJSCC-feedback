@@ -697,7 +697,7 @@ def get_dataset(args):
     data_options.experimental_optimization.apply_default_optimizations = True
     data_options.experimental_optimization.map_parallelization = True
     data_options.experimental_optimization.parallel_batch = True
-    data_options.experimental_optimization.autotune_buffers = True
+   # data_options.experimental_optimization.autotune_buffers = True
 
     def prepare_dataset(dataset, mode, parse_record_fn, bs):
         dataset = dataset.with_options(data_options)
