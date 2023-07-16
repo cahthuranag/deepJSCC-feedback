@@ -837,7 +837,7 @@ if __name__ == "__main__":
     p.add(
         "--train_epochs",
         type=int,
-        default=10000,
+        default=10,
         help=(
             "The number of epochs used to train (each epoch goes over the whole dataset)"
         ),
