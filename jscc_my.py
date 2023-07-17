@@ -10,6 +10,7 @@ import tensorflow_compression as tfc
 import data.dataset_cifar10
 import data.dataset_imagenet
 import data.dataset_kodak
+import data.dataset_mnist
 
 os.environ["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"
 
@@ -17,6 +18,7 @@ DATASETS = {
     "cifar": data.dataset_cifar10,
     "imagenet": data.dataset_imagenet,
     "kodak": data.dataset_kodak,
+    "mnist": data.dataset_mnist
 }
 
 
