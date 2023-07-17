@@ -3,6 +3,10 @@ import sys
 import tarfile
 from six.moves import urllib
 import tensorflow as tf
+import os
+import sys
+import zipfile
+import requests
 
 _HEIGHT = 512
 _WIDTH = 768
@@ -23,7 +27,7 @@ def get_dataset(is_training, data_dir):
 
     file_pattern = os.path.join(data_dir, "kodim*.png")
     filename_dataset = tf.data.Dataset.list_files(file_pattern)
-    return filename_dataset.map(lambda x: tf.image.decode_png(tf.read_file(x)))
+    return filename_dataset.map(lambda x: tf.image.decode_png(tf.io.read_file(x)))
 
 
 def parse_record(raw_record, _mode, dtype):
@@ -53,26 +57,42 @@ def preprocess_image(image, is_training):
     # Subtract off the mean and divide by the variance of the pixels.
     image = tf.image.per_image_standardization(image)
     return image
-
+import os
+import requests
+import zipfile
 
 def maybe_download_and_extract(data_dir):
-    """Download and extract the tarball from Alex's website."""
-    if os.path.exists(data_dir):
+    """Download and extract the zip file from the provided Kaggle link."""
+    try:
+        os.makedirs(data_dir, exist_ok=True)
+    except OSError:
+        print(f"Creation of the directory {data_dir} failed.")
         return
-    else:
-        os.makedirs(data_dir)
 
-        filepath = data_dir
+    print("Downloading and extracting the dataset...")
 
-        url = "http://www.cs.albany.edu/~xypan/research/img/Kodak/kodim{}.png"
-        def _progress(count, block_size, total_size):
-            sys.stdout.write('\r>> Downloading %s %.1f%%' % (
-                filepath, 100.0 * count * block_size / total_size))
-            sys.stdout.flush()
+    url = "https://drive.google.com/uc?id=1ZHginEzirPu8fqVdjvVSN-s9Gx0E6hdt"
+    file_path = os.path.join(data_dir, "kodak-dataset.zip")
 
-        for i in range(25):
-            print(url.format(i+1))
-            filepath, _ = urllib.request.urlretrieve(url.format(i+1), filepath, _progress)
-            print()
-            statinfo = os.stat(filepath)
-            print('Successfully downloaded', filepath, statinfo.st_size, 'bytes.')
+    # Download the zip file
+    response = requests.get(url)
+    with open(file_path, "wb") as f:
+        f.write(response.content)
+
+    # Extract the contents of the zip file
+    with zipfile.ZipFile(file_path, "r") as zip_ref:
+        zip_ref.extractall(data_dir)
+
+    # Remove the downloaded zip file
+    os.remove(file_path)
+
+    # Check if there are 24 PNG files in the data directory
+    png_files = [file for file in os.listdir(data_dir) if file.lower().endswith(".png")]
+    if len(png_files) != 24:
+        print(f"Expected 24 PNG files, but found {len(png_files)} files.")
+        return
+
+    print("Successfully downloaded and extracted the dataset.")
+
+
+maybe_download_and_extract("/tmp/train_data")
